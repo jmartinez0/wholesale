@@ -2,7 +2,7 @@
 
 client_id = "0a55548fb1cb44b696373ab33f3ab19f"
 name = "Wholesale Pricing"
-application_url = "https://example.com"
+application_url = "https://wholesale-pricing-ten.vercel.app"
 embedded = true
 
 [build]
@@ -19,9 +19,13 @@ api_version = "2026-01"
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
+  [[webhooks.subscriptions]]
+  compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+  uri = "/webhooks"
+
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "write_products, write_discounts, read_discounts"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://wholesale-pricing-ten.vercel.app/auth/callback" ]
