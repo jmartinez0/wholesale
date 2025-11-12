@@ -38,6 +38,7 @@ if (host === "localhost") {
 }
 
 export default defineConfig({
+  presets: [vercelPreset()],
   server: {
     allowedHosts: [host],
     cors: {
@@ -50,7 +51,7 @@ export default defineConfig({
       allow: ["app", "node_modules"],
     },
   },
-  plugins: [vercelPreset(), reactRouter(), tsconfigPaths()],
+  plugins: [reactRouter(), tsconfigPaths()],
   build: {
     assetsInlineLimit: 0,
   },
