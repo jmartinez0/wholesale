@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "0a55548fb1cb44b696373ab33f3ab19f"
-name = "Wholesale Pricing"
+name = "JM Wholesale"
 application_url = "https://wholesale-pricing-ten.vercel.app"
 embedded = true
 

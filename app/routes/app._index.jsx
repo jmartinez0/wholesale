@@ -26,7 +26,9 @@ export default function Pricing() {
           return (product.variants?.edges || []).map((variantEdge) => {
             const v = variantEdge.node
             let wholesaleValue = ""
+            let wholesaleMinQty = ""
 
+            // Parse wholesale price
             if (v.wholesalePrice?.value) {
               try {
                 const parsed = JSON.parse(v.wholesalePrice.value)
@@ -36,12 +38,22 @@ export default function Pricing() {
               }
             }
 
+            // Parse minimum quantity
+            if (v.wholesaleMinimumQuantity?.value) {
+              try {
+                wholesaleMinQty = parseInt(v.wholesaleMinimumQuantity.value)
+              } catch {
+                wholesaleMinQty = v.wholesaleMinimumQuantity.value
+              }
+            }
+
             return {
               id: v.id,
               productTitle: product.title,
               variantTitle: v.title,
               price: v.price,
               wholesalePrice: wholesaleValue,
+              wholesaleMinimumQuantity: wholesaleMinQty,
               imageUrl: product.featuredMedia?.image?.url || "",
             }
           })
@@ -68,6 +80,7 @@ export default function Pricing() {
         v.variantTitle,
         String(v.price),
         String(v.wholesalePrice ?? ""),
+        String(v.wholesaleMinimumQuantity ?? ""),
       ].some((f) => f?.toLowerCase().includes(lower)),
     )
   }, [variants, debouncedQuery])
@@ -76,6 +89,14 @@ export default function Pricing() {
     setVariants((prev) =>
       prev.map((v) =>
         v.id === variantId ? { ...v, wholesalePrice: value } : v,
+      ),
+    )
+  }
+
+  function handleMinQtyChange(variantId, value) {
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.id === variantId ? { ...v, wholesaleMinimumQuantity: value } : v,
       ),
     )
   }
@@ -92,8 +113,14 @@ export default function Pricing() {
     setVariants((prev) =>
       prev.map((v) => {
         const orig = originalVariantsRef.current.find((o) => o.id === v.id)
-        return orig && v.wholesalePrice !== orig.wholesalePrice
-          ? { ...v, wholesalePrice: orig.wholesalePrice }
+        return orig &&
+          (v.wholesalePrice !== orig.wholesalePrice ||
+            v.wholesaleMinimumQuantity !== orig.wholesaleMinimumQuantity)
+          ? {
+              ...v,
+              wholesalePrice: orig.wholesalePrice,
+              wholesaleMinimumQuantity: orig.wholesaleMinimumQuantity,
+            }
           : v
       }),
     )
@@ -103,10 +130,34 @@ export default function Pricing() {
     e.preventDefault()
     const shopify = useAppBridge()
 
+    const invalidVariants = []
     const changed = variants.filter((v) => {
       const orig = originalVariantsRef.current.find((o) => o.id === v.id)
-      return orig && v.wholesalePrice !== orig.wholesalePrice
+      const hasChanges =
+        orig &&
+        (v.wholesalePrice !== orig.wholesalePrice ||
+          v.wholesaleMinimumQuantity !== orig.wholesaleMinimumQuantity)
+
+      // Validate minimum quantity before saving
+      if (hasChanges && v.wholesaleMinimumQuantity !== "") {
+        const qty = parseInt(v.wholesaleMinimumQuantity, 10)
+        if (isNaN(qty) || qty < 0) {
+          invalidVariants.push(v)
+        }
+      }
+
+      return hasChanges
     })
+
+    if (invalidVariants.length > 0) {
+      shopify.toast.show(
+        `${invalidVariants.length} variant${
+          invalidVariants.length === 1 ? "" : "s"
+        } have invalid minimum quantities. Please enter a number.`,
+        { duration: 6000, isError: true },
+      )
+      return
+    }
 
     if (changed.length === 0) return
 
@@ -126,6 +177,7 @@ export default function Pricing() {
           updates: changed.map((v) => ({
             variantId: v.id,
             value: v.wholesalePrice,
+            minimumQuantity: v.wholesaleMinimumQuantity,
           })),
         }),
       })
@@ -158,7 +210,7 @@ export default function Pricing() {
         <s-stack direction="block" gap="base">
           <s-text-field
             icon="search"
-            placeholder="Search product or price"
+            placeholder="Search anything"
             value={query}
             onInput={(e) => setQuery(e.target.value)}
             label=""
@@ -173,12 +225,13 @@ export default function Pricing() {
                   <s-table-header listSlot="primary">Product</s-table-header>
                   <s-table-header>Retail Price</s-table-header>
                   <s-table-header>Wholesale Price</s-table-header>
+                  <s-table-header>Minimum Quantity</s-table-header>
                 </s-table-header-row>
 
                 <s-table-body>
                   {filteredVariants.length === 0 ? (
                     <s-table-row>
-                      <s-table-cell colSpan="5">
+                      <s-table-cell>
                         <s-text>No results found.</s-text>
                       </s-table-cell>
                     </s-table-row>
@@ -228,6 +281,20 @@ export default function Pricing() {
                                 handlePriceChange(v.id, formatted)
                               }
                             }}
+                          />
+                        </s-table-cell>
+
+                        <s-table-cell>
+                          <s-text-field
+                            type="number"
+                            max={999}
+                            min={0}
+                            value={v.wholesaleMinimumQuantity ?? ""}
+                            label=""
+                            labelAccessibilityVisibility="hidden"
+                            onInput={(e) =>
+                              handleMinQtyChange(v.id, e.target.value)
+                            }
                           />
                         </s-table-cell>
                       </s-table-row>

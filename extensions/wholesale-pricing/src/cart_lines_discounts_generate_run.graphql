@@ -1,26 +1,29 @@
-  query Input {
-    cart {
-      buyerIdentity {
-        customer {
-          hasAnyTag(tags: ["Wholesale"])
+query Input {
+  cart {
+    buyerIdentity {
+      customer {
+        hasAnyTag(tags: ["Wholesale"])
+      }
+    }
+    lines {
+      id
+      quantity
+      cost {
+        subtotalAmount {
+          amount
         }
       }
-      lines {
-        id
-        quantity
-        cost {
-          subtotalAmount {
-            amount
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          wholesalePrice: metafield(namespace: "wholesale", key: "price") {
+            value
           }
-        }
-        merchandise {
-          __typename
-          ... on ProductVariant {
-            metafield(namespace: "wholesale", key: "price") {
-              value
-            }
+          wholesaleMinQty: metafield(namespace: "wholesale", key: "minimum_quantity") {
+            value
           }
         }
       }
     }
   }
+}

@@ -127,7 +127,7 @@ function App() {
       <s-heading>{i18n.translate("title")}</s-heading>
         <s-section>
           <s-stack gap="base">
-              <s-text>This discount applies automatically for any customer tagged Wholesale.</s-text>
+              <s-text>This discount applies automatically for any customer tagged Wholesale when they meet the minimum order quantity for a wholesale product.</s-text>
           </s-stack>
         </s-section>
     </s-function-settings>

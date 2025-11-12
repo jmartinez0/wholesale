@@ -1,45 +1,68 @@
-import { authenticate } from "../shopify.server";
+import { authenticate } from "../shopify.server"
 
 export async function action({ request }) {
-  const { admin } = await authenticate.admin(request);
+  const { admin } = await authenticate.admin(request)
 
   try {
-    const { updates } = await request.json();
+    const { updates } = await request.json()
 
     if (!Array.isArray(updates) || updates.length === 0) {
       return new Response(JSON.stringify({ error: "No updates provided" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
-      });
+      })
     }
 
-    // Split updates into toSave (non-empty) and toDelete (empty)
-    const toSave = [];
-    const toDelete = [];
+    const toSave = []
+    const toDelete = []
 
-    for (const { variantId, value } of updates) {
-      const trimmed = String(value ?? "").trim();
-      if (trimmed === "" || trimmed.toLowerCase() === "null") {
-        toDelete.push({ ownerId: variantId });
-      } else {
-        const num = parseFloat(trimmed);
-        if (isNaN(num)) continue; // skip invalid numbers
-        toSave.push({
+    for (const { variantId, value, minimumQuantity } of updates) {
+      const trimmedPrice = String(value ?? "").trim()
+      if (trimmedPrice === "" || trimmedPrice.toLowerCase() === "null") {
+        toDelete.push({
           ownerId: variantId,
           namespace: "wholesale",
           key: "price",
-          type: "money",
-          value: JSON.stringify({
-            amount: num,
-            currency_code: "USD",
-          }),
-        });
+        })
+      } else {
+        const num = parseFloat(trimmedPrice)
+        if (!isNaN(num)) {
+          toSave.push({
+            ownerId: variantId,
+            namespace: "wholesale",
+            key: "price",
+            type: "money",
+            value: JSON.stringify({
+              amount: num,
+              currency_code: "USD",
+            }),
+          })
+        }
+      }
+
+      const trimmedQty = String(minimumQuantity ?? "").trim()
+      if (trimmedQty === "" || trimmedQty.toLowerCase() === "null") {
+        toDelete.push({
+          ownerId: variantId,
+          namespace: "wholesale",
+          key: "minimum_quantity",
+        })
+      } else {
+        const qtyNum = parseInt(trimmedQty, 10)
+        if (!isNaN(qtyNum)) {
+          toSave.push({
+            ownerId: variantId,
+            namespace: "wholesale",
+            key: "minimum_quantity",
+            type: "number_integer",
+            value: qtyNum.toString(),
+          })
+        }
       }
     }
 
-    const results = { saved: [], deleted: [], errors: [] };
+    const results = { saved: [], deleted: [], errors: [] }
 
-    // Handle deletions (blank values)
     if (toDelete.length > 0) {
       const deleteMutation = `
         mutation metafieldsDelete($metafields: [MetafieldIdentifierInput!]!) {
@@ -55,29 +78,22 @@ export async function action({ request }) {
             }
           }
         }
-      `;
+      `
 
       const deleteRes = await admin.graphql(deleteMutation, {
-        variables: {
-          metafields: toDelete.map((d) => ({
-            ownerId: d.ownerId,
-            namespace: "wholesale",
-            key: "price",
-          })),
-        },
-      });
+        variables: { metafields: toDelete },
+      })
 
-      const deleteJson = await deleteRes.json();
-      const delErrors = deleteJson?.data?.metafieldsDelete?.userErrors || [];
+      const deleteJson = await deleteRes.json()
+      const delErrors = deleteJson?.data?.metafieldsDelete?.userErrors || []
 
       if (delErrors.length > 0) {
-        results.errors.push(...delErrors);
+        results.errors.push(...delErrors)
       } else {
-        results.deleted.push(...toDelete.map((d) => d.ownerId));
+        results.deleted.push(...toDelete.map((d) => d.ownerId))
       }
     }
 
-    // Handle saves (non-empty values)
     if (toSave.length > 0) {
       const saveMutation = `
         mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
@@ -86,36 +102,35 @@ export async function action({ request }) {
             userErrors { field message }
           }
         }
-      `;
+      `
 
       const saveRes = await admin.graphql(saveMutation, {
         variables: { metafields: toSave },
-      });
+      })
 
-      const saveJson = await saveRes.json();
-      const saveErrors = saveJson?.data?.metafieldsSet?.userErrors || [];
+      const saveJson = await saveRes.json()
+      const saveErrors = saveJson?.data?.metafieldsSet?.userErrors || []
 
       if (saveErrors.length > 0) {
-        results.errors.push(...saveErrors);
+        results.errors.push(...saveErrors)
       } else {
-        results.saved.push(...toSave.map((s) => s.ownerId));
+        results.saved.push(...toSave.map((s) => s.ownerId))
       }
     }
 
-    const success = results.errors.length === 0;
+    const success = results.errors.length === 0
 
     return new Response(JSON.stringify({ success, ...results }), {
       headers: { "Content-Type": "application/json" },
-    });
-
+    })
   } catch (error) {
-    console.error("Error saving wholesale prices:", error);
+    console.error("Error saving wholesale data:", error)
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
       },
-    );
+    )
   }
 }
