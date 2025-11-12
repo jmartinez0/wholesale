@@ -1,39 +1,4 @@
-import { useState, useEffect } from "react"
-
 export default function Requests() {
-  const [requests, setRequests] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchRequests() {
-      setLoading(true)
-      try {
-        const res = await fetch("/api/requests")
-        if (!res.ok) {
-          console.error("Failed to fetch wholesale requests:", res.statusText)
-          return
-        }
-
-        const data = await res.json()
-
-        const requests = (data.requests?.edges || []).map((edge) => ({
-          ...edge.node,
-          variants: (edge.node.variants?.edges || []).map(
-            (variantEdge) => variantEdge.node,
-          ),
-        }))
-
-        setRequests(requests)
-      } catch (err) {
-        console.error("Error fetching wholesale requests:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchRequests()
-  }, [])
-
   return (
     <s-page heading="Wholesale Access Requests">
       {loading ? (
@@ -82,5 +47,5 @@ export default function Requests() {
         </s-stack>
       )}
     </s-page>
-  )
+  );
 }
