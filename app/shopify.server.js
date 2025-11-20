@@ -121,7 +121,7 @@ const shopify = shopifyApp({
             discountAutomaticAppCreate(
               automaticAppDiscount: {
                 title: "Wholesale Pricing"
-                functionHandle: "wholesale-pricing"
+                functionHandle: "wholesale-discount"
                 discountClasses: [PRODUCT]
                 startsAt: $startsAt
                 combinesWith: {
