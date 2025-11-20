@@ -107,9 +107,6 @@ const shopify = shopifyApp({
           return;
         }
 
-        /* -----------------------------------------------
-         * 3. Create automatic wholesale discount
-         * --------------------------------------------- */
         const startsAt = new Date().toISOString();
 
         const createMutation = `
