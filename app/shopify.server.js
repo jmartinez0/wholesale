@@ -71,21 +71,18 @@ const shopify = shopifyApp({
         }
 
         const checkQuery = `
-          query {
-            discountNodes(
-              query: "functionHandle:'wholesale-discount'"
-              first: 1
-            ) {
-              nodes {
-                id
-                discount {
-                  ... on DiscountAutomaticApp {
-                    functionHandle
+            query {
+              discountNodes(query: "title:'Wholesale Pricing'", first: 5) {
+                nodes {
+                  id
+                  discount {
+                    ... on DiscountAutomaticApp {
+                      title
+                    }
                   }
                 }
               }
             }
-          }
         `;
 
         const checkRes = await admin.graphql(checkQuery);
@@ -125,7 +122,7 @@ const shopify = shopifyApp({
               }
             ) {
               automaticAppDiscount {
-                id
+                discountId
                 title
                 functionHandle
               }

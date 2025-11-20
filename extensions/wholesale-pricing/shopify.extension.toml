@@ -11,6 +11,3 @@ description = "t:description"
   target = "cart.lines.discounts.generate.run"
   input_query = "src/cart_lines_discounts_generate_run.graphql"
   export = "cart-lines-discounts-generate-run"
-
-[extensions.ui]
-handle = "discount-ui"
