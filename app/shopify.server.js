@@ -23,9 +23,6 @@ const shopify = shopifyApp({
   hooks: {
     afterAuth: async ({ admin }) => {
       try {
-        /* -----------------------------------------------
-         * 1. Ensure metafield definitions
-         * --------------------------------------------- */
         const definitions = [
           {
             name: "Wholesale Price",
@@ -73,9 +70,6 @@ const shopify = shopifyApp({
           }
         }
 
-        /* -----------------------------------------------
-         * 2. Check for wholesale discount via functionHandle
-         * --------------------------------------------- */
         const checkQuery = `
           query {
             discountNodes(
