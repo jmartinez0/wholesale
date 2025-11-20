@@ -96,7 +96,7 @@ const shopify = shopifyApp({
         const nodes = checkJson.data.discountNodes.nodes;
 
         const exists = nodes.some(
-          n => n.discount?.functionHandle === "wholesale-discount"
+          n => n.discount?.title === "Wholesale Discount"
         );
 
         if (exists) {
@@ -124,7 +124,6 @@ const shopify = shopifyApp({
               automaticAppDiscount {
                 discountId
                 title
-                functionHandle
               }
               userErrors {
                 field
