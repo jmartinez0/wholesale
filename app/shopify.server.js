@@ -123,7 +123,6 @@ const shopify = shopifyApp({
                 title: "Wholesale Pricing"
                 discountClasses: [PRODUCT]
                 startsAt: $startsAt
-                appliesOncePerCustomer: false
                 combinesWith: {
                   productDiscounts: false
                   orderDiscounts: false
