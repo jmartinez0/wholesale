@@ -120,7 +120,7 @@ const shopify = shopifyApp({
           mutation CreateWholesaleDiscount($startsAt: DateTime!) {
             discountAutomaticAppCreate(
               automaticAppDiscount: {
-                title: "Wholesale Pricing"
+                title: "Wholesale Discount"
                 functionHandle: "wholesale-discount"
                 discountClasses: [PRODUCT]
                 startsAt: $startsAt
