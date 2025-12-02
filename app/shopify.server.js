@@ -26,7 +26,7 @@ const shopify = shopifyApp({
         const definitions = [
           {
             name: "Wholesale Price",
-            namespace: "wholesale",
+            namespace: "$app:wholesale",
             key: "price",
             type: "number_decimal",
             ownerType: "PRODUCTVARIANT",
@@ -34,7 +34,7 @@ const shopify = shopifyApp({
           },
           {
             name: "Wholesale Minimum Quantity",
-            namespace: "wholesale",
+            namespace: "$app:wholesale",
             key: "minimum_quantity",
             type: "number_integer",
             ownerType: "PRODUCTVARIANT",
