@@ -41,8 +41,7 @@ export default function Requests() {
       ) : (
         <s-stack direction="block" gap="base">
           <s-banner tone="info">
-            The wholesale access requests feature is a work in progress. In the
-            future, users will be able to fill out a request form and you can
+            The wholesale access requests feature is a work in progress. In a future update, users will be able to fill out a request form and you can
             accept/deny their request here.
           </s-banner>
           <s-stack direction="inline" gap="base">
