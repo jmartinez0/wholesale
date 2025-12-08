@@ -31,7 +31,7 @@ export default function Pricing() {
             const v = variantEdge.node;
 
             // number_decimal always comes as a string or null
-            let wholesaleValue = v.wholesalePrice?.value ?? "";
+            let wholesaleValue = formatMoney(v.wholesalePrice?.value);
 
             // number_integer always comes as a string or null
             let wholesaleMinQty = v.wholesaleMinimumQuantity?.value ?? "";
@@ -94,8 +94,7 @@ export default function Pricing() {
   function formatMoney(value) {
     if (value === "" || value == null) return "";
     const num = parseFloat(value);
-    if (isNaN(num)) return value;
-    return num.toFixed(2);
+    return isNaN(num) ? value : num.toFixed(2);
   }
 
   function handleDiscard(e) {
