@@ -24,7 +24,7 @@ export function cartLinesDiscountsGenerateRun(input) {
     const discountPerItem = retail - wholesale;
 
     candidates.push({
-      message: "WHOLESALE",
+      message: "Wholesale",
       targets: [{ cartLine: { id: line.id } }],
       value: {
         fixedAmount: {
